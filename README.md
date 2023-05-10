@@ -11,3 +11,12 @@ The idea is to create a Docker-image that includes:
 - For Nuts-network-participants the API mimics the behaviour of the authorization server and resource server as specified in the "Toepassing-op-Nuts BgZ"
 - For AORTA-network-participants the API mimics the behavious of GBZ's (check with VZVZ)
 - The proxy-server is able to transform incoming Nuts-based requests to outgoing AORTA-based requests
+
+## How to use
+1. Put the base-url of the Nuts-node in the variable BASE_URL_NUTS_NODE (example: "http://host.docker.internal:1323" )
+2. Build and run the Docker-image
+```
+$ docker build -t my-python-app .
+$ docker run -it --rm --name my-running-app my-python-app
+```
+3. send requests to the Proxy-server's API by using Postman and debug!
