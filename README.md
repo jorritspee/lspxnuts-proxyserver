@@ -1,4 +1,4 @@
-# lxpxnuts-proxy-server
+# lspxnuts-proxyserver
 This is some code to create an AORTA-Nuts proxy server.
 The idea is to create a Docker-image that includes:
 - A Python-based web server
