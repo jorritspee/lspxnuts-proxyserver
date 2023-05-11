@@ -40,31 +40,34 @@ class S(BaseHTTPRequestHandler):
 		self._set_response()  
 
 def run(server_class=HTTPServer, handler_class=S):
-    """Entrypoint for python server"""
-    server_address = ("0.0.0.0", 8000)
-    httpd = server_class(server_address, handler_class)
-    print("launching server...")
-    httpd.serve_forever() 
+	"""Entrypoint for python server"""
+	server_address = ("0.0.0.0", 8000)
+	httpd = server_class(server_address, handler_class)
+	print("launching server...")
+	httpd.serve_forever() 
 
 def introspect_access_token(access_token):
-    """
-    Introspects an access token to determine its validity.
-    Args:
-        access_token (str): The access token to introspect.
-    Returns:
-        dict: A dictionary containing information about the access token if it is valid.
-    Raises:
-        Exception: If the introspection request fails or the token is invalid.
-    """
-    endpoint = f"{BASE_URL_NUTS_NODE}/internal/auth/v1/accesstoken/introspect"
-    request_body = { "token" : f"{access_token}" }
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    response = requests.post(endpoint, data=request_body, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception(f"Introspection failed with status code {response.status_code}: {response.text}")
-        return False
+	"""
+	Introspects an access token to determine its validity.
+	Args:
+		access_token (str): The access token to introspect.
+	Returns:
+		dict: A dictionary containing information about the access token if it is valid.
+	Raises:
+		Exception: If the introspection request fails or the token is invalid.
+	"""
+	endpoint = f"{BASE_URL_NUTS_NODE}/internal/auth/v1/accesstoken/introspect"
+	request_body = { "token" : f"{access_token}" }
+	headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+
+	#we need an exception handler here for
+	response = requests.post(endpoint, data=request_body, headers=headers)
+
+	if response.status_code == 200:
+		return response.json()
+	else:
+		raise Exception(f"Introspection failed with status code {response.status_code}: {response.text}")
+		return False
 
 if __name__ == "__main__":
-    run()
+	run()
