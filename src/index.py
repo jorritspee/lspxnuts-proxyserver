@@ -5,52 +5,39 @@ BASE_URL_NUTS_NODE = "http://host.docker.internal:1323"
 
 class S(BaseHTTPRequestHandler):
 	def _set_response(self):
+		responseCode = 200
+		responseObj = { "hello": "world"}
+
 		#introspect incoming access token
 		bearer = self.headers['Authorization'] # Bearer YourTokenHere
-		token = bearer.split()[1]  # YourTokenHere
-		tokenvalidationresult = introspect_access_token(token)
-                
-		#pyObj = json.loads(tokenvalidationresult)
-		pyObj = tokenvalidationresult
-		
-		#print(pyObj)
-		
-		if(pyObj["active"] == False):
-			self.send_response(403)
+		if bearer is None:
+			responseCode = 403
+			responseObj = {"no": "token"}
+			print('no token!')
 		else:
-			self.send_response(200)
-			
+			token = bearer.split()[1]  # YourTokenHere
+			tokenvalidationresult = introspect_access_token(token)
+			pyObj = tokenvalidationresult
+			#print(pyObj)
+			if(pyObj["active"] == False):
+				responseCode  = 403
+				responseObj = pyObj
+			else:
+				responseObj = { "token": "okay!"}
+		
+		self.send_response(responseCode)
 		self.send_header('Content-type', 'application/json')
 		self.end_headers()
-		self.wfile.write(json.dumps(tokenvalidationresult).encode('utf-8'))
+		self.wfile.write(json.dumps(responseObj).encode('utf-8'))
 	def do_GET(self):
-		logging.info("GET request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
+		print("GET request,\n\nPath: " + str(self.path) + "\n\nHeaders:\n" + str(self.headers) + "\n")
 		self._set_response()
-                
-		#bearer = self.headers['Authorization'] # Bearer YourTokenHere
-		#token = bearer.split()[1]  # YourTokenHere
-		#tokenvalidationresult = introspect_access_token(token)
-		self._set_response()
-		#self.wfile.write("\ntoken validation result: {}".format(tokenvalidationresult).encode('utf-8'))
 
-		self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
-		self.wfile.write("\nheaders: {}".format(self.headers).encode('utf-8'))
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
 		post_data = self.rfile.read(content_length) # <--- Gets the data itself
-		logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",str(self.path), str(self.headers), post_data.decode('utf-8'))
-		self._set_response()
-                
-		#bearer = self.headers['Authorization'] # Bearer YourTokenHere
-		#token = bearer.split()[1]  # YourTokenHere
-		#tokenvalidationresult = introspect_access_token(token)
-		self._set_response()
-		#self.wfile.write("\ntoken validation result: {}".format(tokenvalidationresult).encode('utf-8'))
-                
-		self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
-		self.wfile.write("\nheaders: {}".format(self.headers).encode('utf-8'))
-		self.wfile.write("\npost data: {}".format(post_data).encode('utf-8'))
-        
+		print("POST request\n\nPath:" + str(self.path) + "\n\nHeaders:\n" + str(self.headers) + "Body:\n" + post_data.decode('utf-8') + "\n")
+		self._set_response()  
 
 def run(server_class=HTTPServer, handler_class=S):
     """Entrypoint for python server"""
@@ -77,6 +64,7 @@ def introspect_access_token(access_token):
         return response.json()
     else:
         raise Exception(f"Introspection failed with status code {response.status_code}: {response.text}")
+        return False
 
 if __name__ == "__main__":
     run()

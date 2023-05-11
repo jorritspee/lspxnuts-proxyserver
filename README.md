@@ -17,6 +17,6 @@ The idea is to create a Docker-image that includes:
 2. Build and run the Docker-image
 ```
 $ docker build -t my-python-app .
-$ docker run -it --rm --name my-running-app my-python-app
+$ docker run -p 8000:8000 -it --rm --name my-running-app my-python-app
 ```
 3. send requests to the Proxy-server's API by using Postman and debug!
