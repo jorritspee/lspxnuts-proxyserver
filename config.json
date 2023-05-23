@@ -1,0 +1,6 @@
+{
+    "BASE_URL_NUTS_NODE": "http://nuts-node:1323",
+    "BASE_URL_LSP": "https://zim.prf001.aorta-zorg.nl",
+    "LSP_APPLICATION_ID": "80000002",
+    "FILENAME_TRANSACTION_TOKEN": "transactietoken.txt"
+}
