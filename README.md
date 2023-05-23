@@ -12,7 +12,19 @@ The idea is to create a Docker-image that includes:
 - For AORTA-network-participants the API mimics the behavious of GBZ's (check with VZVZ)
 - The proxy-server is able to transform incoming Nuts-based requests to outgoing AORTA-based requests
 
-## How to use
+## NEW how to use
+1. In Visual Studio Code: https://code.visualstudio.com/docs/python/tutorial-flask
+2. In short: run and the api is available on http://127.0.0.1:5000
+
+## NEW code structure
+- ./app.py initializes the api
+- ./resources contains all the classes for the seperate api-endpoints (e.g. notify, request-access-token)
+- ./aorta contains classes for interacting with aorta components, e.g. aorta_authorization_client is a client for the aorta authorization server
+- ./nuts contains classes for interacting with the nuts-node, e.g. nuts_vcr_client
+- ./config.json contains configuration
+- Dockerfile needs update
+
+## OLD How to use
 1. Put the base-url of the Nuts-node in the variable BASE_URL_NUTS_NODE (example: "http://host.docker.internal:1323" )
 2. Build and run the Docker-image
 ```
