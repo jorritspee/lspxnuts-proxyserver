@@ -28,7 +28,10 @@ The idea is to create a Docker-image that includes:
 1. Put the base-url of the Nuts-node in the variable BASE_URL_NUTS_NODE (example: "http://host.docker.internal:1323" )
 2. Build and run the Docker-image
 ```
-$ docker build -t my-python-app .
-$ docker run -p 8000:8000 -it --rm --name my-running-app my-python-app
+$ docker build -t lspxnuts-proxy-docker .
+$ docker run -d -p 8000:5000 lspxnuts-proxy-docker
+
+OLD: $ docker build -t my-python-app .
+OLD: $ docker run -p 8000:8000 -it --rm --name my-running-app my-python-app
 ```
 3. send requests to the Proxy-server's API by using Postman and debug!

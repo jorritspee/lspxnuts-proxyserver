@@ -1,14 +1,28 @@
-FROM python:3
+# syntax=docker/dockerfile:1
 
-ENV SRC_DIR /usr/bin/src/webapp/src
+FROM python:3.11-slim-buster
+
+WORKDIR /lsxpxnuts-proxy-docker
 
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY src/* ${SRC_DIR}/
+COPY . .
 
-WORKDIR ${SRC_DIR}
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
 
-ENV PYTHONUNBUFFERED=1
+# OLD:
+# FROM python:3
 
-CMD ["python", "index.py"]
+# ENV SRC_DIR /usr/bin/src/webapp/src
+
+# COPY requirements.txt requirements.txt
+# RUN pip3 install -r requirements.txt
+
+# COPY src/* ${SRC_DIR}/
+
+# WORKDIR ${SRC_DIR}
+
+# ENV PYTHONUNBUFFERED=1
+
+# CMD ["python", "index.py"]
