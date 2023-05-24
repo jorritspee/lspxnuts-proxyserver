@@ -63,7 +63,7 @@ class Access_token(Resource):
             print("error getting receiver app id", e)
             return {'routing info not found': issuerURA}, 400
 
-        sender_app_id = 110
+        sender_app_id = "110"
 
         print(receiver_app_id)
 
