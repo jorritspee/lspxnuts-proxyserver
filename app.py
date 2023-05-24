@@ -20,8 +20,8 @@ api.add_resource(Request_access_token, '/request-access-token')
 api.add_resource(Notify, '/notify')
 
 # driver function
-if __name__ == '__main__': 
-    app.run(debug = True)
+if __name__ == '__main__':
+    app.run(debug = True, port=8000)
 
 # ---------
 # - Proxy -
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 #     request_handler.send_response(responseCode)
 #     request_handler.send_header('Content-Type', 'application/json')
 #     request_handler.end_headers()
-#     request_handler.wfile.write(json.dumps(responseObj).encode('utf-8'))	
+#     request_handler.wfile.write(json.dumps(responseObj).encode('utf-8'))
 
 # # --------------
 # # - RB Nuts In -
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 #     request_handler.send_header('Content-Type', 'application/json')
 #     request_handler.end_headers()
 #     request_handler.wfile.write(json.dumps(responseObj).encode('utf-8'))
-    
+
 # def transform_notification(task_ta_np_json):
 #     """2.16 transform notification"""
 #     task_aof = json.dumps({
@@ -488,28 +488,28 @@ if __name__ == '__main__':
 # # -------------
 # # - Nuts Node -
 # # -------------
-    
+
 # def call_node_search_receiver(did_receiver):
 #     endpoint = f"{BASE_URL_NUTS_NODE}/internal/vcr/v2/issuer/vc/search?credentialType=VzvzUraCredential&issuer={did_receiver}"
-    
+
 #     request_body = {}
 #     headers = {}
-    
+
 #     response = requests.get(endpoint, data=request_body, headers=headers)
 #     response.raise_for_status()
 #     print('response.text: ' + response.text)
-    
+
 # def call_node_search_sender(did_sender):
 #     endpoint = f"{BASE_URL_NUTS_NODE}/internal/vcr/v2/issuer/vc/search?credentialType=VzvzUraCredential&issuer={did_sender}"
-    
+
 #     request_body = {}
 #     headers = {}
-    
+
 #     response = requests.get(endpoint, data=request_body, headers=headers)
 #     response.raise_for_status()
-#     print('response.text: ' + response.text)	
+#     print('response.text: ' + response.text)
 
-# def call_node_introspect(access_token):	
+# def call_node_introspect(access_token):
 #     """
 #     Introspects an access token to determine its validity.
 #     Args:
@@ -531,57 +531,57 @@ if __name__ == '__main__':
 #     else:
 #         raise Exception(f"Introspection failed with status code {response.status_code}: {response.text}")
 #         return False
-    
+
 # # -------
 # # - LSP -
 # # -------
 
 # def call_lsp_get_routing_info():
 #     endpoint = f"{BASE_URL_LSP}/adresseringservice/getRoutingInfo"
-    
+
 #     ura = '90001235' # TODO
-    
+
 #     request_body = '{"destination":{"code":"' + ura + '","codeSystem":"urn:oid:2.16.528.1.1007.3.3"},"interaction":[{"id":"create:Task:2.0:request"}]}'
 #     headers = {
 #       'AORTA-ID': 'initialRequestID=f4857f0d-2c3a-439a-9b38-0382e5417396; requestID=ba483d8f-d3b1-4b75-b1e2-e36d59a6dc38',
 #       'Content-Type': 'application/json; charset=utf-8'
 #     }
 #     cert = ('LSP110.csc-lsp.nl.pem', 'LSP110.csc-lsp.nl.key.unencrypted') # TODO
-    
+
 #     response = requests.post(endpoint, data=request_body, headers=headers, verify=False, cert=cert)
 #     response.raise_for_status()
 #     response_json = response.json()
 #     lsp_application_id = response_json[0]["destinationInfo"][0]["destination"]["code"]
 #     print('lsp_application_id:' + lsp_application_id)
-    
+
 # def call_lsp_token_exchange_request():
 #     endpoint = f"{BASE_URL_LSP}/token"
-    
+
 #     lsp_application_id = '80000002' # TODO
-    
+
 #     f = open("transactietoken.txt", "rb")
 #     transactie_token_b64_bytes = base64.b64encode(f.read())
 #     transactie_token_b64 = transactie_token_b64_bytes.decode()
 #     transactie_token_b64_url = urllib.parse.quote(transactie_token_b64)
 #     f.close()
 #     #print('transactie_token_b64_url:'+transactie_token_b64_url)
-    
+
 #     request_body = 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange&client_id=urn%3Aoid%3A2.16.840.1.113883.2.4.6.6.110&audience=urn%3Aoid%3A2.16.840.1.113883.2.4.6.6.' + lsp_application_id + '&requested_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Ajwt&subject_token=' + transactie_token_b64_url + '&subject_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Asaml2&scope=create%3ATask%3A2.0%3Arequest~aorta.contextcode.BGZ~normaal'
 #     headers = {
 #       'AORTA-ID': 'initialRequestID=4260560a-e506-4c13-a8a2-276e26bcc599; requestID=adfe821e-086f-4cff-89a5-0cf11f1e941c',
 #       'Content-Type': 'application/x-www-form-urlencoded'
 #     }
 #     cert = ('LSP110.csc-lsp.nl.pem', 'LSP110.csc-lsp.nl.key.unencrypted')
-    
+
 #     response = requests.post(endpoint, data=request_body, headers=headers, verify=False, cert=cert)
 #     response.raise_for_status()
 #     response_json = response.json()
 #     access_token = response_json["access_token"]
 #     return access_token
-    
+
 # def call_lsp_create_task(task_aof):
 #     endpoint = f"{BASE_URL_LSP}/rbvnc/fhir/r4/Task"
-    
+
 #     request_body = task_aof
 #     headers = {
 #       'Authorization': 'Bearer ' + access_token,
@@ -590,7 +590,7 @@ if __name__ == '__main__':
 #       'Content-Type': 'application/fhir+json'
 #     }
 #     cert = ('LSP110.csc-lsp.nl.pem', 'LSP110.csc-lsp.nl.key.unencrypted')
-    
+
 #     response = requests.post(endpoint, data=request_body, headers=headers, verify=False, cert=cert)
 #     #response.raise_for_status()
 #     print(response.text)
@@ -609,22 +609,22 @@ if __name__ == '__main__':
 #             self.send_response(501)
 #             self.send_header('Content-Type', 'application/json')
 #             self.end_headers()
-#             self.wfile.write('')	
-    
+#             self.wfile.write('')
+
 #     def do_GET(self):
 #         print("GET request,\n\nPath: " + str(self.path) + "\n\nHeaders:\n" + str(self.headers) + "\n")
 #         self._set_response()
 
 #     def do_POST(self):
 #         print("POST request\n\nPath:" + str(self.path) + "\n\nHeaders:\n" + str(self.headers) + "\n")
-#         self._set_response()  
+#         self._set_response()
 
 # def run(server_class=HTTPServer, handler_class=S):
 #     """Entrypoint for python server"""
 #     server_address = ("0.0.0.0", 8000)
 #     httpd = server_class(server_address, handler_class)
 #     print("launching server...")
-#     httpd.serve_forever() 
-    
+#     httpd.serve_forever()
+
 # if __name__ == "__main__":
 #     run()
