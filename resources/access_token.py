@@ -19,15 +19,10 @@ class Access_token(Resource):
     # Corresponds to incoming POST request
     def post(self):
 
-        access_token = "geen"
         token_type = "aorta_access_token"
         expires_in = 600
 
         print(request.data)
-
-        #get parameters from request body
-        #see https://nuts-node.readthedocs.io/en/stable/pages/integrating/api.html
-        #endpoint: /internal/auth/v1/request-access-token
 
         grant_type = request.form['grant_type']
         assertion = request.form['assertion']
@@ -44,40 +39,37 @@ class Access_token(Resource):
         issuer = decoded['iss']
         subject = decoded['sub']
 
-        issuerURA = Nuts_vcr_client.getURA(issuer)
-        if not issuerURA:
+        try:
+            issuerURA = Nuts_vcr_client.getURA(issuer)
+        except:
             return {'issuer URA not found': issuer}, 400
 
-        subjectURA = Nuts_vcr_client.getURA(subject)
-        if not subjectURA:
+        try:
+            subjectURA = Nuts_vcr_client.getURA(subject)
+        except:
             return {'subject URA not found': subject}, 400
 
         print('issuerURA: ' + issuerURA)
         print('subjectURA: ' + subjectURA)
 
-        recieverRoutingInfo = Aorta_addressing_client.call_lsp_get_routing_info(issuerURA)
-        if not recieverRoutingInfo:
+        try:
+            receiver_app_id = Aorta_addressing_client.get_app_id(subjectURA)
+        except:
             return {'routing info not found': issuerURA}, 400
 
-        print(recieverRoutingInfo)
+        sender_app_id = 110
 
-
-        return 200
+        print(receiver_app_id)
 
         # print('authorizer: ' + did_authorizer)
 
         #for notification request
-        did_receiver = did_authorizer #'did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic' # TODO
-        did_sender = did_requester #'did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic' # TODO
-
-        try:
-            ura_destination = Nuts_vcr_client.getURA(did_authorizer)
-        except:
-            ura_destination = "90001235"
+        # did_receiver = did_authorizer #'did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic' # TODO
+        # did_sender = did_requester #'did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic' # TODO
 
         #appid = current_app.config["LSP_APPLICATION_ID"] #is dit het appid van de sender of van van de receiver of van de nuts-proxy?
 
-        access_token = Aorta_authorization_client.call_lsp_token_exchange_request()
+        access_token = Aorta_authorization_client.call_lsp_token_exchange_request(receiver_app_id, sender_app_id)
 
         return {    "access_token": access_token,
                     "token_type": token_type,

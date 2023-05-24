@@ -30,16 +30,14 @@ class Nuts_vcr_client:
 
         try:
             response = requests.post(endpoint, json=json_obj, headers=headers)
-        except:
+        except Exception as e:
             print("error sending vcr request to nuts node api")
-            return False
+            raise e
 
-        try:
-            credentials = response.json()
-            for credential in credentials['verifiableCredentials']:
-                if "VzvzUraCredential" in credential["verifiableCredential"]["type"]:
-                    return credential["verifiableCredential"]["credentialSubject"]["schema:identifier"]
-            return False
+        credentials = response.json()
+        for credential in credentials['verifiableCredentials']:
+            if "VzvzUraCredential" in credential["verifiableCredential"]["type"]:
+                return credential["verifiableCredential"]["credentialSubject"]["nuts:ura"]
 
-        except:
-            return False
+        raise "could not find URA in for DID"
+

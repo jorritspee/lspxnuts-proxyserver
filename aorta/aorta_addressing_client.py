@@ -2,7 +2,7 @@ from flask import current_app
 import requests
 
 class Aorta_addressing_client:
-    def call_lsp_get_routing_info(full_ura):
+    def get_app_id(full_ura):
         ura = full_ura.split('.')[-1]
         endpoint = f"{current_app.config['BASE_URL_LSP']}/adresseringservice/getRoutingInfo"
 
@@ -19,4 +19,4 @@ class Aorta_addressing_client:
         lsp_application_id = response_json[0]["destinationInfo"][0]["destination"]["code"]
         print('lsp_application_id:' + lsp_application_id)
 
-        return response_json
+        return lsp_application_id
