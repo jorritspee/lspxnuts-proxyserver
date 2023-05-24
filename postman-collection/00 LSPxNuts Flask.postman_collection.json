@@ -7,62 +7,732 @@
 	},
 	"item": [
 		{
+			"name": "onboarding",
+			"item": [
+				{
+					"name": "1.2.11 trust vendor VZVZ as issuer for VzvzUraCredentials",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "1.3.12 issue VzvzUraCredential",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "1.4.13 trust Nuts-organizations as issuer of NutsAuthorizationCredentials",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "1.4.15 trust LSP-organizations as issuer of NutsAuthorizationCredentials",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "notification",
+			"item": [
+				{
+					"name": "send Notification-Task",
+					"item": [
+						{
+							"name": "search bgz-receiver",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"pm.collectionVariables.set(\"did:nuts:receiver-org\", responseData.verifiableCredentials[0].verifiableCredential.credentialSubject.id);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"query\": {\r\n    \"@context\": [\r\n      \"https://www.w3.org/2018/credentials/v1\",\r\n      \"https://nuts.nl/credentials/v1\"\r\n    ],\r\n    \"type\": [\r\n      \"VerifiableCredential\",\r\n      \"NutsOrganizationCredential\"\r\n    ],\r\n    \"credentialSubject\": {\r\n      \"organization\": {\r\n        \"name\": \"{{receiver-org-name}}\"\r\n      }\r\n    }\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/vcr/v2/search",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"vcr",
+										"v2",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create NutsAuthzCredential for Workflow-Task",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"issuer\": \"{{did:nuts:sender-org}}\",\r\n    \"type\": \"NutsAuthorizationCredential\",\r\n    \"credentialSubject\": {\r\n        \"id\": \"{{did:nuts:receiver-org}}\",\r\n        \"resources\": [\r\n            {\r\n                \"path\": \"/Task/{{workflow-task-id}}\",\r\n                \"operations\": [\"read\", \"update\"],\r\n                \"userContext\": false\r\n            }\r\n        ],\r\n        \"purposeOfUse\": \"bgz-sender\"\r\n    },\r\n    \"visibility\": \"private\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/vcr/v2/issuer/vc",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"vcr",
+										"v2",
+										"issuer",
+										"vc"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create NutsAuthzCredential for BgZ-resources",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"pm.collectionVariables.set(\"did:nuts:bgz-resources-cred\", responseData.credentialSubject.id);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"issuer\": \"{{did:nuts:sender-org}}\",\r\n  \"type\": \"NutsAuthorizationCredential\",\r\n  \"credentialSubject\": {\r\n    \"id\": \"{{did:nuts:receiver-org}}\",\r\n    \"subject\": \"urn:oid:2.16.840.1.113883.2.4.6.3:{{patient-bsn}}\",\r\n    \"resources\": [\r\n      {\r\n        \"path\": \"/Patient\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Patient?_include=Patient%3Ageneral-practitioner\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Coverage?_include=Coverage%3Apayor%3AOrganization&_include=Coverage%3Apayor%3APatient\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Consent?category=http%3A%2F%2Fsnomed.info%2Fsct%7C11291000146105\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Consent?category=http%3A%2F%2Fsnomed.info%2Fsct%7C11341000146107\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation/$lastn?category=http%3A%2F%2Fsnomed.info%2Fsct%7C118228005%2Chttp%3A%2F%2Fsnomed.info%2Fsct%7C384821006\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Condition\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation/$lastn?code=http%3A%2F%2Fsnomed.info%2Fsct%7C365508006\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation?code=http%3A%2F%2Fsnomed.info%2Fsct%7C228273003\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation?code=http%3A%2F%2Fsnomed.info%2Fsct%7C365980008\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/NutritionOrder\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Flag\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/AllergyIntolerance\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/DeviceUseStatement?_include=DeviceUseStatement%3Adevice\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Immunization?status=completed\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation/$lastn?code=http%3A%2F%2Floinc.org%7C85354-9\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation/$lastn?code=http%3A%2F%2Floinc.org%7C29463-7\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation/$lastn?code=http%3A%2F%2Floinc.org%7C8302-2%2Chttp%3A%2F%2Floinc.org%7C8306-3%2Chttp%3A%2F%2Floinc.org%7C8308-9\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Procedure?category=http%3A%2F%2Fsnomed.info%2Fsct%7C387713003\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Encounter?class=http%3A%2F%2Fhl7.org%2Ffhir%2Fv3%2FActCode%7CIMP,http%3A%2F%2Fhl7.org%2Ffhir%2Fv3%2FActCode%7CACUTE,http%3A%2F%2Fhl7.org%2Ffhir%2Fv3%2FActCode%7CNONAC\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/DocumentReference?status=current\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      },\r\n      {\r\n        \"path\": \"/Observation/$lastn?category=http%3A%2F%2Fsnomed.info%2Fsct%7C275711006&_include=Observation:specimen\",\r\n        \"operations\": [\"search\"],\r\n        \"userContext\": false\r\n      }\r\n    ],\r\n    \"purposeOfUse\": \"bgz-sender\"\r\n  },\r\n  \"visibility\": \"private\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/vcr/v2/issuer/vc",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"vcr",
+										"v2",
+										"issuer",
+										"vc"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "look up notification endpoint of bgz-receiver",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"pm.collectionVariables.set(\"bgz-receiver-notification-endpoint\", responseData.endpoint);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{nuts-host}}/internal/didman/v1/did/{{did:nuts:receiver-org}}/compoundservice/{{service-type}}/endpoint/{{endpoint-type}}",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"didman",
+										"v1",
+										"did",
+										"{{did:nuts:receiver-org}}",
+										"compoundservice",
+										"{{service-type}}",
+										"endpoint",
+										"{{endpoint-type}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get an access token for sending the notification",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"pm.collectionVariables.set(\"access_token\", responseData.access_token);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"authorizer\": \"{{did:nuts:receiver-org}}\",\r\n    \"requester\": \"{{did:nuts:sender-org}}\",\r\n    \"service\": \"{{service-type}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/auth/v1/request-access-token",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"auth",
+										"v1",
+										"request-access-token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "send task",
+							"protocolProfileBehavior": {
+								"disabledSystemHeaders": {}
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/fhir+json",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"resourceType\": \"Task\",\r\n  \"basedOn\": [\r\n    {\r\n      \"reference\": \"Task/{{workflow-task-id}}\"\r\n    }\r\n  ],\r\n  \"groupIdentifier\": {\r\n    \"system\": \"https://tools.ietf.org/html/rfc4122\",\r\n    \"value\": \"urn:uuid:484639e6-e647-464c-8722-6e8a73cda4e0\"\r\n  },\r\n  \"identifier\": {\r\n    \"system\": \"https://tools.ietf.org/html/rfc4122\",\r\n    \"value\": \"urn:uuid:6128cfe7-0e89-4d37-ba90-e4ca3b3fcbbe\"\r\n  },\r\n  \"status\": \"requested\",\r\n  \"intent\": \"proposal\",\r\n  \"requester\": {\r\n    \"agent\": {\r\n      \"identifier\": {\r\n        \"system\": \"https://www.w3.org/ns/did/v1\",\r\n        \"value\": \"{{did:nuts:sender-vendor}}\"\r\n      }\r\n    },\r\n    \"onBehalfOf\": {\r\n      \"identifier\": {\r\n        \"system\": \"https://www.w3.org/ns/did/v1\",\r\n        \"value\": \"{{did:nuts:sender-org}}\"\r\n      }\r\n    }\r\n  },\r\n  \"owner\": {\r\n    \"identifier\": {\r\n      \"system\": \"https://www.w3.org/ns/did/v1\",\r\n      \"value\": \"{{did:nuts:receiver-org}}\"\r\n    }\r\n  },\r\n  \"input\": [\r\n    {\r\n      \"type\": {\r\n        \"coding\": [\r\n          {\r\n            \"system\": \"http://xxx.nl/fhir/CodeSystem/TaskParameterType\",\r\n            \"code\": \"authorization_base\"\r\n          }\r\n        ]\r\n      },\r\n      \"value\": \"{{did:nuts:bgz-resources-cred}}\"\r\n    },\r\n    {\r\n      \"type\": {\r\n        \"coding\": [\r\n          {\r\n            \"system\": \"http://fhir.nl/fhir/NamingSystem/TaskCodes\",\r\n            \"code\": \"get_workflow_task\"\r\n          }\r\n        ]\r\n      },\r\n      \"valueBoolean\": true\r\n    }\r\n  ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{bgz-receiver-notification-endpoint}}/Task",
+									"host": [
+										"{{bgz-receiver-notification-endpoint}}"
+									],
+									"path": [
+										"Task"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "2.4 request access token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"authorizer\": \"did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic\",\n    \"requester\": \"did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic\",\n    \"service\": \"bgz-receiver\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{proxy-docker-url}}/request-access-token",
+							"host": [
+								"{{proxy-docker-url}}"
+							],
+							"path": [
+								"request-access-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.15 notification-request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resourceType\": \"Task\",\n    \"basedOn\": [\n        {\n            \"reference\": \"Task/Workflow-Task-123455\"\n        }\n    ],\n    \"groupIdentifier\": {\n        \"system\": \"https://tools.ietf.org/html/rfc4122\",\n        \"value\": \"urn:uuid:484639e6-e647-464c-8722-6e8a73cda4e0\"\n    },\n    \"identifier\": {\n        \"system\": \"https://tools.ietf.org/html/rfc4122\",\n        \"value\": \"urn:uuid:6128cfe7-0e89-4d37-ba90-e4ca3b3fcbbe\"\n    },\n    \"status\": \"requested\",\n    \"intent\": \"proposal\",\n    \"requester\": {\n        \"agent\": {\n            \"identifier\": {\n                \"system\": \"https://www.w3.org/ns/did/v1\",\n                \"value\": \"did:nuts of fhir service endpoint op bgz-sender vendor\"\n            }\n        },\n        \"onBehalfOf\": {\n            \"identifier\": {\n                \"system\": \"https://www.w3.org/ns/did/v1\",\n                \"value\": \"did:nuts of bgz-sender organization\"\n            }\n        }\n    },\n    \"owner\": {\n        \"identifier\": {\n            \"system\": \"https://www.w3.org/ns/did/v1\",\n            \"value\": \"did:nuts of bgz-receiver organization\"\n        }\n    },\n    \"input\": [\n        {\n            \"type\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://xxx.nl/fhir/CodeSystem/TaskParameterType\",\n                        \"code\": \"authorization_base\"\n                    }\n                ]\n            },\n            \"valueString\": \"did:nuts of NutsAuthorizationCredential for BgZ-resources\"\n        },\n        {\n            \"type\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://fhir.nl/fhir/NamingSystem/TaskCodes\",\n                        \"code\": \"get_workflow_task\"\n                    }\n                ]\n            },\n            \"valueBoolean\": true\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{proxy-docker-url}}/notify",
+							"host": [
+								"{{proxy-docker-url}}"
+							],
+							"path": [
+								"notify"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "pull",
+			"item": [
+				{
+					"name": "request Workflow-Task",
+					"item": [
+						{
+							"name": "search NutsAuthzCredential for Workflow-Task",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"pm.collectionVariables.set(\"workflow-task-vcrs\", JSON.stringify(responseData.verifiableCredentials.map(vc => vc.verifiableCredential)));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"query\": {\r\n    \"@context\": [\r\n      \"https://www.w3.org/2018/credentials/v1\",\r\n      \"https://nuts.nl/credentials/v1\"\r\n    ],\r\n    \"type\": [\r\n      \"VerifiableCredential\",\r\n      \"NutsAuthorizationCredential\"\r\n    ],\r\n    \"credentialSubject\": {\r\n\t \"id\": \"{{did:nuts:receiver-org}}\",\r\n      \"resources\": {\r\n        \"path\": \"/Task/{{workflow-task-id}}\"\r\n      }\r\n    }\r\n  }\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/vcr/v2/search",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"vcr",
+										"v2",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "look up fhir endpoint of bgz-sender",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"pm.collectionVariables.set(\"bgz-sender-fhir-endpoint\", responseData.endpoint);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{nuts-host}}/internal/didman/v1/did/{{did:nuts:sender-org}}/compoundservice/{{bgz-sender-service-type}}/endpoint/{{fhir-endpoint-type}}",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"didman",
+										"v1",
+										"did",
+										"{{did:nuts:sender-org}}",
+										"compoundservice",
+										"{{bgz-sender-service-type}}",
+										"endpoint",
+										"{{fhir-endpoint-type}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get an access token for requesting the Workflow-Task",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"pm.collectionVariables.set(\"access_token\", responseData.access_token);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"authorizer\": \"{{did:nuts:sender-org}}\",\r\n    \"requester\": \"{{did:nuts:receiver-org}}\",\r\n    \"service\": \"{{bgz-sender-service-type}}\",\r\n    \"credentials\": {{workflow-task-vcrs}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/auth/v1/request-access-token",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"auth",
+										"v1",
+										"request-access-token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "fetch Workflow-Task",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{bgz-sender-fhir-endpoint}}/Task/{{workflow-task-id}}",
+									"host": [
+										"{{bgz-sender-fhir-endpoint}}"
+									],
+									"path": [
+										"Task",
+										"{{workflow-task-id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "request Fhir Resource",
+					"item": [
+						{
+							"name": "get NutsAuthzCredential for Bgz-resources",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"pm.collectionVariables.set(\"bgz-resources-vcr\", JSON.stringify(responseData));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{nuts-host}}/internal/vcr/v2/vc/{{did:nuts:bgz-resources-cred-url-encoded}}",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"vcr",
+										"v2",
+										"vc",
+										"{{did:nuts:bgz-resources-cred-url-encoded}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "look up fhir endpoint of bgz-sender",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"pm.collectionVariables.set(\"bgz-sender-fhir-endpoint\", responseData.endpoint);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{nuts-host}}/internal/didman/v1/did/{{did:nuts:sender-org}}/compoundservice/{{bgz-sender-service-type}}/endpoint/{{fhir-endpoint-type}}",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"didman",
+										"v1",
+										"did",
+										"{{did:nuts:sender-org}}",
+										"compoundservice",
+										"{{bgz-sender-service-type}}",
+										"endpoint",
+										"{{fhir-endpoint-type}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get an access token for requesting the Workflow-Task",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"pm.collectionVariables.set(\"access_token\", responseData.access_token);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"authorizer\": \"{{did:nuts:sender-org}}\",\r\n    \"requester\": \"{{did:nuts:receiver-org}}\",\r\n    \"service\": \"{{bgz-sender-service-type}}\",\r\n    \"credentials\": [\r\n        {{bgz-resources-vcr}}\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/auth/v1/request-access-token",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"auth",
+										"v1",
+										"request-access-token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "fetch e.g. /Patient?_include=Patient%3Ageneral-practitioner",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{bgz-sender-fhir-endpoint}}/Patient?_include=Patient%3Ageneral-practitioner",
+									"host": [
+										"{{bgz-sender-fhir-endpoint}}"
+									],
+									"path": [
+										"Patient"
+									],
+									"query": [
+										{
+											"key": "_include",
+											"value": "Patient%3Ageneral-practitioner"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "respond to Fhir Resource request",
+					"item": [
+						{
+							"name": "introspect access_token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let responseData =  pm.response.json()\r",
+											"console.log(responseData)\r",
+											"// validate e.g. token is active\r",
+											"pm.test(\"Token is active\", () => {\r",
+											"  pm.expect(responseData.active).to.be.true;\r",
+											"});\r",
+											"// get subject from list of vcs\r",
+											"let subject = responseData.resolvedVCs?.find(vc => !!vc.credentialSubject.subject)?.credentialSubject.subject;\r",
+											"pm.test(\"subject is BSN\", () => {\r",
+											"  let bsnOid = \"urn:oid:2.16.840.1.113883.2.4.6.3:\"\r",
+											"  pm.expect(subject?.startsWith(bsnOid)).to.be.true;\r",
+											"  pm.expect(!!subject?.replace(bsnOid, \"\")).to.be.true;\r",
+											"})\r",
+											"pm.collectionVariables.set(\"patient-subject\", subject);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{nuts-host}}/internal/auth/v1/accesstoken/introspect",
+									"host": [
+										"{{nuts-host}}"
+									],
+									"path": [
+										"internal",
+										"auth",
+										"v1",
+										"accesstoken",
+										"introspect"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
 			"name": "0. hello world",
 			"request": {
 				"method": "GET",
 				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "2.4 request access token",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"authorizer\": \"did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic\",\n    \"requester\": \"did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic\",\n    \"service\": \"bgz-receiver\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{proxy-docker-url}}/request-access-token",
-					"host": [
-						"{{proxy-docker-url}}"
-					],
-					"path": [
-						"request-access-token"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "2.15 notification-request",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"resourceType\": \"Task\",\n    \"basedOn\": [\n        {\n            \"reference\": \"Task/Workflow-Task-123455\"\n        }\n    ],\n    \"groupIdentifier\": {\n        \"system\": \"https://tools.ietf.org/html/rfc4122\",\n        \"value\": \"urn:uuid:484639e6-e647-464c-8722-6e8a73cda4e0\"\n    },\n    \"identifier\": {\n        \"system\": \"https://tools.ietf.org/html/rfc4122\",\n        \"value\": \"urn:uuid:6128cfe7-0e89-4d37-ba90-e4ca3b3fcbbe\"\n    },\n    \"status\": \"requested\",\n    \"intent\": \"proposal\",\n    \"requester\": {\n        \"agent\": {\n            \"identifier\": {\n                \"system\": \"https://www.w3.org/ns/did/v1\",\n                \"value\": \"did:nuts of fhir service endpoint op bgz-sender vendor\"\n            }\n        },\n        \"onBehalfOf\": {\n            \"identifier\": {\n                \"system\": \"https://www.w3.org/ns/did/v1\",\n                \"value\": \"did:nuts of bgz-sender organization\"\n            }\n        }\n    },\n    \"owner\": {\n        \"identifier\": {\n            \"system\": \"https://www.w3.org/ns/did/v1\",\n            \"value\": \"did:nuts of bgz-receiver organization\"\n        }\n    },\n    \"input\": [\n        {\n            \"type\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://xxx.nl/fhir/CodeSystem/TaskParameterType\",\n                        \"code\": \"authorization_base\"\n                    }\n                ]\n            },\n            \"valueString\": \"did:nuts of NutsAuthorizationCredential for BgZ-resources\"\n        },\n        {\n            \"type\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://fhir.nl/fhir/NamingSystem/TaskCodes\",\n                        \"code\": \"get_workflow_task\"\n                    }\n                ]\n            },\n            \"valueBoolean\": true\n        }\n    ]\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{proxy-docker-url}}/notify",
-					"host": [
-						"{{proxy-docker-url}}"
-					],
-					"path": [
-						"notify"
-					]
-				}
 			},
 			"response": []
 		}

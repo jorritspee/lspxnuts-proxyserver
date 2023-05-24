@@ -19,7 +19,7 @@ class Request_access_token(Resource):
 
         access_token = "geen"
         token_type = "aorta_access_token"
-        expires_in = 900
+        expires_in = 600
           
         data = request.get_json()     # status code
         
