@@ -14,7 +14,7 @@ The idea is to create a Docker-image that includes:
 
 ## NEW how to use
 1. In Visual Studio Code: https://code.visualstudio.com/docs/python/tutorial-flask
-2. In short: run and the api is available on http://127.0.0.1:5000
+2. In short: run and the api is available on http://127.0.0.1:8000
 
 ## NEW code structure
 - ./app.py initializes the api
@@ -29,7 +29,7 @@ The idea is to create a Docker-image that includes:
 2. Build and run the Docker-image
 ```
 $ docker build -t lspxnuts-proxy-docker .
-$ docker run -d -p 8000:5000 lspxnuts-proxy-docker
+$ docker run -d -p 8000:8000 lspxnuts-proxy-docker
 
 OLD: $ docker build -t my-python-app .
 OLD: $ docker run -p 8000:8000 -it --rm --name my-running-app my-python-app
