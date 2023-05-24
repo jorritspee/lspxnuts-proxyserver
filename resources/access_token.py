@@ -2,6 +2,7 @@ from flask import jsonify, request, current_app
 from flask_restful import Resource
 import base64, urllib.parse, requests
 from aorta.aorta_authorization_client import Aorta_authorization_client
+from aorta.aorta_addressing_client import Aorta_addressing_client
 from nuts.nuts_vcr_client import Nuts_vcr_client
 import jwt
 
@@ -44,15 +45,21 @@ class Access_token(Resource):
         subject = decoded['sub']
 
         issuerURA = Nuts_vcr_client.getURA(issuer)
-        if issuerURA == False:
+        if not issuerURA:
             return {'issuer URA not found': issuer}, 400
 
         subjectURA = Nuts_vcr_client.getURA(subject)
-        if subjectURA == False:
+        if not subjectURA:
             return {'subject URA not found': subject}, 400
 
         print('issuerURA: ' + issuerURA)
         print('subjectURA: ' + subjectURA)
+
+        recieverRoutingInfo = Aorta_addressing_client.call_lsp_get_routing_info(issuerURA)
+        if not recieverRoutingInfo:
+            return {'routing info not found': issuerURA}, 400
+
+        print(recieverRoutingInfo)
 
 
         return 200
