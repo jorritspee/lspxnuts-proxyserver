@@ -4,6 +4,7 @@ from flask_restful import Api
 from resources.hello import Hello
 from resources.request_access_token import Request_access_token
 from resources.notify import Notify
+from resources.fhir import Fhir
 
 import base64, json, logging, requests, urllib.parse
 
@@ -18,6 +19,7 @@ api = Api(app)
 api.add_resource(Hello, '/')
 api.add_resource(Request_access_token, '/request-access-token')
 api.add_resource(Notify, '/notify')
+api.add_resource(Fhir, '/fhir')
 
 # driver function
 if __name__ == '__main__':
