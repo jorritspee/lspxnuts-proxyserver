@@ -29,7 +29,7 @@ class Admin_Issue_UraCredential(Resource):
                         "issuer": current_app.config['VENDOR_DID'],
                         "credentialSubject": {
                             "id": subject_did,
-                            "nuts:ura": "urn:oid: 2.16.528.1.1007.3.3." + subject_ura
+                            "nuts:ura": "urn:oid:2.16.528.1.1007.3.3." + subject_ura
                         },
                         "visibility": "public",
                         "publishToNetwork": True
