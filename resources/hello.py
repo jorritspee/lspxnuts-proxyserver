@@ -7,7 +7,17 @@ class Hello(Resource):
     # this function is called whenever there
     # is a GET request for this resource
     def get(self):
-        return {'task': current_app.config["BASE_URL_NUTS_NODE"]}
+        return {
+                "hello": "world",
+                "you": "are doing great! keep up the good work",
+                "config": {
+                    "base url nuts node": current_app.config["BASE_URL_NUTS_NODE"],
+                    "base url lsp": current_app.config["BASE_URL_LSP"],
+                    "lsp application id": current_app.config["LSP_APPLICATION_ID"],
+                    "filename transation token": current_app.config["FILENAME_TRANSACTION_TOKEN"]
+                },
+                "resources": ["/", "/request-access-token", "/notify"]
+            }
         #return {'task': 'Hello world'}
 
         #return make_response(jsonify({'message': 'hello world'}), 200)

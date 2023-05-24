@@ -1,0 +1,102 @@
+{
+	"info": {
+		"_postman_id": "999f2099-a514-4614-b64e-ed4bc775d04b",
+		"name": "00 LSPxNuts Flask",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13273761"
+	},
+	"item": [
+		{
+			"name": "0. hello world",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "2.4 request access token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"authorizer\": \"did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic\",\n    \"requester\": \"did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic\",\n    \"service\": \"bgz-receiver\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{proxy-docker-url}}/request-access-token",
+					"host": [
+						"{{proxy-docker-url}}"
+					],
+					"path": [
+						"request-access-token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2.15 notification-request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"resourceType\": \"Task\",\n    \"basedOn\": [\n        {\n            \"reference\": \"Task/Workflow-Task-123455\"\n        }\n    ],\n    \"groupIdentifier\": {\n        \"system\": \"https://tools.ietf.org/html/rfc4122\",\n        \"value\": \"urn:uuid:484639e6-e647-464c-8722-6e8a73cda4e0\"\n    },\n    \"identifier\": {\n        \"system\": \"https://tools.ietf.org/html/rfc4122\",\n        \"value\": \"urn:uuid:6128cfe7-0e89-4d37-ba90-e4ca3b3fcbbe\"\n    },\n    \"status\": \"requested\",\n    \"intent\": \"proposal\",\n    \"requester\": {\n        \"agent\": {\n            \"identifier\": {\n                \"system\": \"https://www.w3.org/ns/did/v1\",\n                \"value\": \"did:nuts of fhir service endpoint op bgz-sender vendor\"\n            }\n        },\n        \"onBehalfOf\": {\n            \"identifier\": {\n                \"system\": \"https://www.w3.org/ns/did/v1\",\n                \"value\": \"did:nuts of bgz-sender organization\"\n            }\n        }\n    },\n    \"owner\": {\n        \"identifier\": {\n            \"system\": \"https://www.w3.org/ns/did/v1\",\n            \"value\": \"did:nuts of bgz-receiver organization\"\n        }\n    },\n    \"input\": [\n        {\n            \"type\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://xxx.nl/fhir/CodeSystem/TaskParameterType\",\n                        \"code\": \"authorization_base\"\n                    }\n                ]\n            },\n            \"valueString\": \"did:nuts of NutsAuthorizationCredential for BgZ-resources\"\n        },\n        {\n            \"type\": {\n                \"coding\": [\n                    {\n                        \"system\": \"http://fhir.nl/fhir/NamingSystem/TaskCodes\",\n                        \"code\": \"get_workflow_task\"\n                    }\n                ]\n            },\n            \"valueBoolean\": true\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{proxy-docker-url}}/notify",
+					"host": [
+						"{{proxy-docker-url}}"
+					],
+					"path": [
+						"notify"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "proxy-url",
+			"value": "http://127.0.0.1:5000",
+			"type": "string"
+		},
+		{
+			"key": "proxy-docker-url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
