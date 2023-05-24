@@ -3,7 +3,7 @@ import base64, urllib.parse, requests
 
 class Aorta_authorization_client:
 
-    def call_lsp_token_exchange_request(self, receiver_app_id, sender_application_id):
+    def call_lsp_token_exchange_request(receiver_app_id, sender_application_id):
         endpoint = f"{current_app.config['BASE_URL_LSP']}/token"
 
         f = open(current_app.config["FILENAME_TRANSACTION_TOKEN"], "rb")
