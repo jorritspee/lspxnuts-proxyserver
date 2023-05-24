@@ -41,12 +41,14 @@ class Access_token(Resource):
 
         try:
             issuerURA = Nuts_vcr_client.getURA(issuer)
-        except:
+        except Exception as e:
+            print("error getting issuer URA", e)
             return {'issuer URA not found': issuer}, 400
 
         try:
             subjectURA = Nuts_vcr_client.getURA(subject)
-        except:
+        except Exception as e:
+            print("error getting subject URA", e)
             return {'subject URA not found': subject}, 400
 
         print('issuerURA: ' + issuerURA)
@@ -54,7 +56,8 @@ class Access_token(Resource):
 
         try:
             receiver_app_id = Aorta_addressing_client.get_app_id(subjectURA)
-        except:
+        except Exception as e:
+            print("error getting receiver app id", e)
             return {'routing info not found': issuerURA}, 400
 
         sender_app_id = 110
@@ -69,7 +72,11 @@ class Access_token(Resource):
 
         #appid = current_app.config["LSP_APPLICATION_ID"] #is dit het appid van de sender of van van de receiver of van de nuts-proxy?
 
-        access_token = Aorta_authorization_client.call_lsp_token_exchange_request(receiver_app_id, sender_app_id)
+        try:
+            access_token = Aorta_authorization_client.call_lsp_token_exchange_request(receiver_app_id, sender_app_id)
+        except Exception as e:
+            print("error getting access token", e)
+            return {'access token not found': issuerURA}, 400
 
         return {    "access_token": access_token,
                     "token_type": token_type,
