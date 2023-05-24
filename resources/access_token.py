@@ -39,6 +39,9 @@ class Access_token(Resource):
         issuer = decoded['iss']
         subject = decoded['sub']
 
+        print ('issuer: ' + issuer)
+        print ('subject: ' + subject)
+
         try:
             issuerURA = Nuts_vcr_client.getURA(issuer)
         except Exception as e:

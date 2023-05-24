@@ -39,5 +39,5 @@ class Nuts_vcr_client:
             if "VzvzUraCredential" in credential["verifiableCredential"]["type"]:
                 return credential["verifiableCredential"]["credentialSubject"]["nuts:ura"]
 
-        raise "could not find URA in for DID"
+        raise RuntimeError("could not find URA in for DID")
 
