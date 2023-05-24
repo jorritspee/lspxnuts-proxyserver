@@ -1,0 +1,14 @@
+{
+    "mapping": [
+        {
+            "name": "CNS-connect-organization",
+            "did": "did:nuts:EhptMBHTGi8vtbJh3e1BLaKsTT5i2c2NtU72ox77sBFW",
+            "appid": "110"
+        },
+        {
+            "name": "Diasoft-organization",
+            "did": "did:nuts:8q8zps7edCnxnMwzNyPDYRrvHhrsEpqEzqiRc5bNxxJ3",
+            "appid": "110"
+        }
+    ]
+}
