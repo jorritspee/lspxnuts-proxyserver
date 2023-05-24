@@ -5,6 +5,7 @@ from resources.hello import Hello
 from resources.access_token import Access_token
 from resources.notify import Notify
 from resources.fhir import Fhir
+from resources.admin import Admin_Issue_UraCredential
 
 import base64, json, logging, requests, urllib.parse
 
@@ -20,6 +21,7 @@ api.add_resource(Hello, '/')
 api.add_resource(Access_token, '/access-token')
 api.add_resource(Notify, '/notify')
 api.add_resource(Fhir, '/fhir')
+api.add_resource(Admin_Issue_UraCredential, '/admin/issue/uracredential')
 
 # driver function
 if __name__ == '__main__':
