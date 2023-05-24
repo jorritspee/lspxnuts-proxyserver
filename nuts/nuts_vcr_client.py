@@ -2,11 +2,9 @@ from flask import current_app
 import json, requests
 
 class Nuts_vcr_client:
-    def getURA(did = "did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic"):
-        ura = False
-
+    def getURA(did):
         endpoint = f"{current_app.config['BASE_URL_NUTS_NODE']}/internal/vcr/v2/search"
-        
+
         json_obj =  {
                         "query": {
                             "@context": [
@@ -25,11 +23,11 @@ class Nuts_vcr_client:
                             "allowUntrustedIssuer": True
                         }
                     }
-        
+
         headers = {
         'Content-Type': 'application/json'
         }
-        
+
         try:
             response = requests.post(endpoint, json=json_obj, headers=headers)
         except:
@@ -37,7 +35,11 @@ class Nuts_vcr_client:
             return False
 
         try:
-            ura = response.json()["verifiableCredentials"][0]["verifiableCredential"]["credentialSubject"]["nuts:ura"]
-            return ura
+            credentials = response.json()
+            for credential in credentials['verifiableCredentials']:
+                if "VzvzUraCredential" in credential["verifiableCredential"]["type"]:
+                    return credential["verifiableCredential"]["credentialSubject"]["schema:identifier"]
+            return False
+
         except:
             return False

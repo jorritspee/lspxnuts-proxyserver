@@ -3,16 +3,17 @@ from flask_restful import Resource
 import base64, urllib.parse, requests
 from aorta.aorta_authorization_client import Aorta_authorization_client
 from nuts.nuts_vcr_client import Nuts_vcr_client
+import jwt
 
-class Request_access_token(Resource):
-  
+class Access_token(Resource):
+
     # corresponds to the GET request.
     # this function is called whenever there
     # is a GET request for this resource
     def get(self):
-  
+
         return {'invalid method': 'GET', 'please use': 'POST'}, 405
-    
+
     """2.4 Request accessToken"""
     # Corresponds to incoming POST request
     def post(self):
@@ -20,18 +21,44 @@ class Request_access_token(Resource):
         access_token = "geen"
         token_type = "aorta_access_token"
         expires_in = 600
-          
-        data = request.get_json()     # status code
-        
-        #get parameters from request body 
+
+        print(request.data)
+
+        #get parameters from request body
         #see https://nuts-node.readthedocs.io/en/stable/pages/integrating/api.html
         #endpoint: /internal/auth/v1/request-access-token
-        did_authorizer = data['authorizer']
-        did_requester = data['requester']
-        service = data['service'] #bgz-receiver for notification-request, #bgz-sender for pull-request
 
-        print('authorizer: ' + did_authorizer)
-        
+        grant_type = request.form['grant_type']
+        assertion = request.form['assertion']
+
+        print('grant_type: ' + grant_type)
+        print('assertion: ' + assertion)
+
+        if grant_type != "urn:ietf:params:oauth:grant-type:jwt-bearer":
+            return {'invalid grant_type': grant_type}, 400
+
+        decoded = jwt.decode(assertion, verify=False, algorithms=['ES256'], options={"verify_signature": False})
+        print(decoded)
+
+        issuer = decoded['iss']
+        subject = decoded['sub']
+
+        issuerURA = Nuts_vcr_client.getURA(issuer)
+        if issuerURA == False:
+            return {'issuer URA not found': issuer}, 400
+
+        subjectURA = Nuts_vcr_client.getURA(subject)
+        if subjectURA == False:
+            return {'subject URA not found': subject}, 400
+
+        print('issuerURA: ' + issuerURA)
+        print('subjectURA: ' + subjectURA)
+
+
+        return 200
+
+        # print('authorizer: ' + did_authorizer)
+
         #for notification request
         did_receiver = did_authorizer #'did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic' # TODO
         did_sender = did_requester #'did:nuts:EwVMYK2ugaMvRHUbGFBhuyF423JuNQbtpes35eHhkQic' # TODO
@@ -51,7 +78,7 @@ class Request_access_token(Resource):
                 }, 200
 
 
-    
+
 
 #def request_access_token(request_handler):
     #"""2.4 Request accessToken"""
@@ -74,5 +101,5 @@ class Request_access_token(Resource):
     # request_handler.send_response(responseCode)
     # request_handler.send_header('Content-Type', 'application/json')
     # request_handler.end_headers()
-    # request_handler.wfile.write(json.dumps(responseObj).encode('utf-8'))	
+    # request_handler.wfile.write(json.dumps(responseObj).encode('utf-8'))
 

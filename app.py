@@ -2,7 +2,7 @@
 from flask import Flask
 from flask_restful import Api
 from resources.hello import Hello
-from resources.request_access_token import Request_access_token
+from resources.access_token import Access_token
 from resources.notify import Notify
 from resources.fhir import Fhir
 
@@ -17,7 +17,7 @@ api = Api(app)
 
 # adding the defined resources along with their corresponding urls
 api.add_resource(Hello, '/')
-api.add_resource(Request_access_token, '/request-access-token')
+api.add_resource(Access_token, '/access-token')
 api.add_resource(Notify, '/notify')
 api.add_resource(Fhir, '/fhir')
 
