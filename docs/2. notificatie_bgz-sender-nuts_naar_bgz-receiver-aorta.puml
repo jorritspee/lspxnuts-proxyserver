@@ -1,0 +1,141 @@
+@startuml Notificatie
+autonumber 1.1
+
+title "Autoriseren en notificeren"
+
+skinparam BoxPadding 50
+box "Nuts Sender (Zorgaanbieder)" #OrangeRed
+  participant "Sender System" as Sender
+  participant SenderNode
+end box
+
+box "AORTA-Nuts Koppelnode" #Green
+  participant "ProxyAutorisatieServer" as PAS
+  participant ReceiverNode
+  participant "RB Nuts In" as rsc
+end box
+
+box "VZVZ" #LightGray
+  participant "RB ZA-in" as rbin order 20
+  participant "ZORG-AB" as zab order 19
+  participant "Adressering Server" as adds order 46
+  participant "RB VnC" as vnc order 50
+  participant "Autorisatie Server ZA" as autd order 60
+end box
+
+box "AORTA Receiver (Zorgaanbieder)" #LightBlue
+participant "Resource Server (xIS)" as rx1 order 70
+end box
+
+== Aanmaken NutsAuthorizationCredentials voor toegang tot FHIR-resources ==
+
+group "authorization registration"
+  Sender -> SenderNode: search DID of Receiver Org (name, city)
+  note right
+    zoek DID op op basis van naam en vestigingsplaats
+    Standaard API: /internal/vcr/v2/issuer/vc/search
+    Check of combi naam en vestigingsplaats uniek is
+  end note
+  SenderNode --> Sender: <<DID of Receiver>>
+  Sender -> SenderNode: Register bgz authorization record \n(sender DID, receiver DID, bsn, PurposeOfUse "BgZ-sender")
+  note right
+    Standaard API: /internal/vcr/v2/issuer/vc
+  end note
+  SenderNode --> Sender: Ok
+  SenderNode -> ReceiverNode: sync authorizations
+  note right
+    dit betreft het autorisatie-record 
+    waarmee de afnemer straks kan gaan pullen
+    sync alleen wanneer trust is ingericht (zie onboarding)
+  end note
+end
+
+== Verkrijg access token voor notificatie en notificeer (d.m.v. notifcatie-Task) ==
+
+group "notify"
+  autonumber inc a
+  Sender -> SenderNode: Find Task notify endpoint (did receiver)
+  note right
+    Standaard API: /internal/didman/v1/did/{did}
+/ compoundservice/{compoundServiceType}
+/endpoint/ {endpointType}
+  {did}: did receiver (result of 1.1)
+  {compoundServiceType}: "bgz-receiver"
+  {endpointType}: "notification"
+  end note
+  SenderNode -> Sender: <<Endpoint>>
+  
+  Sender -> SenderNode: Request accessToken (parameter: vc result of 1.4)
+  note right
+    Standaard API: /internal/auth/v1/request-access-token
+  end note
+  activate Sender
+    SenderNode -> PAS:Request accessToken <<jwt-grant>>
+    note right
+        Standaard API: /n2n/auth/v1/accesstoken
+    end note
+    
+    group get URA & appid of receiver
+      PAS -> ReceiverNode: search VzvzUraCredential <did van Receiver>
+      note right
+        find ura 
+        Standaard API: /internal/vcr/v2/issuer/vc/search
+      end note
+      ReceiverNode --> PAS: <VzvzUraCredential met daarin URA van receiver>
+      PAS -> adds: getRoutingInfo (URA van receiver, interaction-id-set)
+      note right
+        https://public.vzvz.nl/display/UBEBVLEL/Adressering+Server+Interfaces+-+0.7.x#AdresseringServerInterfaces0.7.x-RoutingInfoInterface
+      end note
+      adds --> PAS: (interaction-id, appID-set)-set van receiver
+    end group
+    
+    
+    group get URA & appid of sender
+      PAS -> ReceiverNode: search VzvzUraCredential <did van sender>
+      note right
+        find ura 
+        Standaard API: /internal/vcr/v2/issuer/vc/search
+      end note
+      ReceiverNode --> PAS: <VzvzUraCredential met daarin URA van sender>
+    end group
+    
+    PAS -> autd: Token Exchange Request (audience=<appID>, subject_token, [actor_token,] \n[reg_token,] scope=<interaction-id-set>\~<contextcode>\~<purposeofuse>)
+    note left
+      zie google doc 
+    end note
+    autd --> PAS: Token Exchange Response (access_token_AORTA, \nscope=<interaction-id>-set\~<contextcode>\~<purposeofuse>)
+    PAS -> SenderNode: <<aorta accessTokenr>>
+    SenderNode -> Sender: <<aorta accessToken>>
+  deactivate Sender
+  
+  Sender -> rsc: Notify - create Task (Task.input bevat query_strings\n NO consent_token) \n<aorta accessTokenr>
+  note right
+    notificatie-Task conform TA NP
+  end note
+  
+  rsc -> rsc: transform notification
+  note right
+    swap did:nuts-id of SenderSystem for aorta-appid
+    register mapping did <--> appid in onboarding
+    misschien hier toch een consent_token aanmaken?
+  end note
+  
+  /'alt niet doen in hackathon
+  activate Sender
+    opt Indien certificaatgegevens nog niet beschikbaar
+      rsc -> autd: Ophalen metadata
+      autd --> rsc: metadata
+      rsc -> autd: Ophalen certificaatgegevens
+      autd --> rsc: JWKS
+    end
+    rsc -> rsc: Validate signature <<aorta accessToken>>
+  end alt'/
+    rsc -> vnc: create Task (Task.input bevat query_strings\n consent_token = "did:nuts van authz cred") + access_token_AORTA
+    vnc -> rx1: create Task + access_token_AORTA
+    rx1 --> vnc: 200
+    vnc --> rsc: 200
+    rsc --> Sender: 200 Ok
+  deactivate Sender
+end  
+
+@enduml

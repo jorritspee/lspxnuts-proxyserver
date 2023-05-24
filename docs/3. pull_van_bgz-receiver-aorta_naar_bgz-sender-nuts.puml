@@ -1,0 +1,103 @@
+@startuml Pull
+autonumber 1.1
+
+title "Opvragen van gegevens door de receiver, bij de sender"
+skinparam BoxPadding 50
+
+box "Zorgaanbieder (Ontvanger)" #LightBlue
+participant "Resource Client (xIS)" as rc order 10
+end box
+
+box "VZVZ" #LightGray
+participant "RB ZA-in" as rbin order 20
+participant "RB VnC" as vnc order 60
+participant "Autorisatie Server ZA" as autd order 50
+end box
+
+box "AORTA-Nuts Koppelnode" #Green
+  participant "AORTA-Nuts-Proxy" as PAS order 62
+  participant ReceiverNode order 65
+end box
+
+box "NUts Sender (Verzender)" #OrangeRed
+participant SenderNode order 69
+participant "SenderSystem" order 70
+end box
+
+== Toetsen autorisatie en verkrijgen aorta access token ==
+
+group Verkrijgen juiste appIDs van de betreffende zorgaanbieder voor alle interacties in de Task
+  rc -> rc: Haal benodigde info uit de ontvangen AoF Task
+end
+
+loop Voor ieder verkregen appID: vraag access_token voor de door betreffende Resource Server (xIS) geboden interacties
+  autonumber inc a
+  rc -> PAS: Token Exchange Request (audience=<appID>, subject_token, \n[actor_token,] cnt_token, scope=<interaction-id-set>\~<contextcode>\~<purposeofuse>)
+  activate rc
+    PAS -> PAS: bepaal welke autorisatieserver \n(AS-ZA of NutsNode) \nvan toepassing is (obv appid en scope)
+    note right
+      als er voor het appid een mapping naar een nuts-did is, 
+      dan NutsNode-AS gebruiken,
+      anders VZVZ-AS.
+    end note
+    group haal nuts-autorisatie op 
+      PAS -> ReceiverNode: get authzcredential (did van authz-credential)
+      note right
+        obv did opgenomen in veld 
+        consent_token van notificatie-task
+      end note
+    
+      alt controleer aanwezigheid autorisatie optie zoeken
+        PAS -> ReceiverNode: search VzvzUraCredential (ura sender, appid sender)
+        ReceiverNode -> PAS: VzvzUraCredential met daarin DID sender
+        PAS -> ReceiverNode: search VzvzUraCredential (ura receiver, appid receiver)
+        ReceiverNode -> PAS: VzvzUraCredential met daarin DID receiver
+        PAS -> ReceiverNode: search authzcredential (did's receiver en sender, bsn, purposeOfUse)
+        note right
+          zie google doc
+        end note
+      end alt
+      ReceiverNode --> PAS: authzcredential
+    end group
+    PAS -> autd: Token Exchange Request (audience=<appID>, subject_token, [actor_token,] \n[reg_token,] scope=<interaction-id-set>\~<contextcode>\~<purposeofuse>)
+    note right
+      vereist onboarding en registratie appid sender-nuts in APR
+      consent_token leeg laten, mag niet worden gevuld met een nuts-authz-cred, dan is een transcatietoken nodig
+      OF consent_token aanmaken
+    end note
+    autd --> PAS: Token Exchange Response (access_token_AORTA, \nscope=<interaction-id>-set\~<contextcode>\~<purposeofuse>)
+    PAS --> rc: Token Exchange Response (access_token_AORTA, scope=<interaction-id>-set\~<contextcode>\~<purposeofuse>)
+  deactivate rc
+end
+
+== Initiëren FHIR-interactie en verkrijgen nuts access token==
+
+loop Voor iedere interactie in de Task
+  rc -> rbin: FHIR-interactie + access_token_AORTA
+  activate rc
+    rbin -> vnc: FHIR-interactie + access_token_AORTA
+    vnc -> PAS: FHIR-interactie + access_token_AORTA
+
+    group get Nuts access token
+      group get Nuts authz credential
+        PAS -> ReceiverNode: search VzvzUraCredential (ura sender, appid sender)
+        ReceiverNode -> PAS: VzvzUraCredential met daarin DID sender
+        PAS -> ReceiverNode: search VzvzUraCredential (ura receiver, appid receiver)
+        ReceiverNode -> PAS: VzvzUraCredential met daarin DID receiver
+        PAS -> ReceiverNode: search authzcredential (did's receiver en sender, bsn, purposeOfUse)
+        ReceiverNode --> PAS: authzcredential
+      end group
+      PAS -> ReceiverNode: request Nuts Access Token (NutsAuthzCredential)
+      ReceiverNode -> SenderNode: forward Nuts access token request
+      SenderNode --> ReceiverNode: <nuts access token>
+      ReceiverNode --> PAS: <nuts access token>
+    end group
+
+    PAS -> SenderSystem: FHIR-interactie <Nuts access token>
+    SenderSystem --> PAS: FHIR-result
+    PAS --> vnc: FHIR-result
+    vnc --> rbin: FHIR-result
+    rbin --> rc: FHIR-result
+  deactivate rc
+end
+@enduml

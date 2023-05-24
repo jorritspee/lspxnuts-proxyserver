@@ -1,0 +1,177 @@
+@startuml Onboarding
+autonumber 1.0.0
+Box Nuts_sender #orangered
+  participant "Sender System" as Sender
+  participant SenderNode
+end box
+box "AORTA-Nuts Koppelnode" #Green
+  participant ReceiverNode
+  participant "RB Nuts In" as rsc
+  participant adminapp
+end box 
+box "VZVZ" #LightGray
+  participant "RB ZA-in" as rbin order 20
+  participant "ZORG-AB" as zab order 19
+  participant "Adressering Server" as adds order 46
+  participant "RB VnC" as vnc order 50
+  participant "Autorisatie Server ZA" as autd order 60
+end box
+
+box "AORTA Receiver (Zorgaanbieder)" #LightBlue
+participant "Resource Server (xIS)" as rx1 order 70
+end box
+
+group SETUP / Onboarding
+
+== setup vendors ==
+
+group Setup Vendor - Bronhouder
+  autonumber inc b
+  Sender -> SenderNode: create DID
+  activate Sender
+    SenderNode -> SenderNode: create keypair
+    SenderNode -> SenderNode: create DID document
+    SenderNode --> Sender: <DID document>
+  deactivate Sender
+  SenderNode <-> ReceiverNode --: sync DID-document
+  
+  Sender -> SenderNode: register endpoints & coumpoundservice bgz-sender
+  activate Sender
+    note right
+      endpoint nutscomm 
+      endpoint bgz-sender-fhir 
+      endpoint oauth 
+      compoundservice bgz-sender
+    end note
+    SenderNode -> SenderNode: update DID document
+    SenderNode --> Sender: <DID document>
+  deactivate Sender
+  SenderNode <-> ReceiverNode --: sync DID-document
+end
+
+group Setup Vendor VZVZ - Receiver
+  autonumber inc b
+  adminapp -> ReceiverNode: create DID
+  activate adminapp
+    ReceiverNode -> ReceiverNode: create keypair
+    ReceiverNode -> ReceiverNode: create DID document
+    ReceiverNode --> adminapp: <DID document>
+  deactivate adminapp
+  ReceiverNode <-> SenderNode --: sync DID-document
+  
+  adminapp -> ReceiverNode: register endpoints & coumpoundservice bgz-sender
+  activate adminapp
+    note right
+      endpoint nutscomm 
+      endpoint bgz-receiver-notify 
+      endpoint oauth 
+      compoundservice bgz-receiver
+    end note
+    ReceiverNode -> ReceiverNode: update DID document
+    ReceiverNode --> adminapp: <DID document>
+  deactivate adminapp
+  ReceiverNode <-> SenderNode --: sync DID-document
+  
+  adminapp->adminapp: Inrichten AORTA-Nuts-Proxy als AS-ZA 
+end
+
+group trust each others credentials on vendor level
+  Sender -> SenderNode: trust did Vzvz as issuer of VzvzUraCredentials
+  note right
+    nodig voor syncen VzvzUraCredentials tussen nodes
+  end note
+  SenderNode <-> ReceiverNode: sync trust
+end group
+
+== setup healthcare organisations ==
+
+group Setup Zorgaanbieder-Vendor-combi - Bronhouder
+  autonumber inc b
+  Sender -> SenderNode: create DID
+  activate Sender
+    SenderNode -> SenderNode: create keypair
+    SenderNode -> SenderNode: create DID document
+    SenderNode --> Sender: <DID document>
+  deactivate Sender
+  SenderNode <-> ReceiverNode --: sync DID-document
+  
+  Sender -> SenderNode: toekennen compoundservice
+  activate Sender
+    note right
+      leg relatie tussen bestaande 
+      compoundservice bgz-sender en did zorgaanbieder
+    end note
+    SenderNode -> SenderNode: update DID document
+    SenderNode --> Sender: <DID document>
+  deactivate Sender
+  SenderNode <-> ReceiverNode --: sync DID-document
+  
+  adminapp -> adminapp: aanmaken appid
+  note left
+    appid aanmaken in APR
+  end note
+  adminapp -> adminapp: vullen tabelletje nuts-did voor sender <--> appid
+
+  note left
+    consequentie: voor alle lsp-deelnemers
+    (die willen uitwisselen met nuts-deelnemers) moet een nuts-did worden aangemaakt
+    voor alle nuts-deelnemers
+    (die willen uitwisselen met lsp-deelnemers) moet een aorta-appid worden aangemaakt
+  end note
+  adminapp -> ReceiverNode: issue public VzvzUraCredential to DID of sender
+
+end
+
+group Setup Zorgaanbieder-Vendor-combi - Receiver
+  autonumber inc b
+  adminapp -> ReceiverNode: create DID
+  activate adminapp
+    ReceiverNode -> ReceiverNode: create keypair
+    ReceiverNode -> ReceiverNode: create DID document
+    ReceiverNode --> adminapp: <DID document>
+  deactivate adminapp
+  ReceiverNode <-> SenderNode --: sync DID-document
+  
+  adminapp -> ReceiverNode: register endpoints & coumpoundservice bgz-sender
+  activate adminapp
+    note right
+      leg relatie tussen bestaande 
+      compoundservice bgz-receiver en did zorgaanbieder
+    end note
+    ReceiverNode -> ReceiverNode: update DID document
+    ReceiverNode --> adminapp: <DID document>
+  deactivate adminapp
+  ReceiverNode <-> SenderNode --: sync DID-document
+
+  adminapp -> adminapp: vullen tabelletje nuts-did voor receiver <--> appid
+  
+  adminapp -> ReceiverNode: issue public VzvzUraCredential to DID of receiver
+  note right
+    Niet alleen de Aorta-deelnemers maar ook 
+    de Nuts-deelnemers moeten een UraCredential krijgen
+  end note
+  ReceiverNode <-> SenderNode: <VzvzUraCredential>a
+end
+
+group trust each others credentials on ZA level
+  adminapp -> ReceiverNode: trust did Sender as issuer of NutsAuthorizationCredentials
+  note right
+    nodig voor syncen NutsAuthzCredentials tussen nodes
+  end note
+  SenderNode <-> ReceiverNode: sync trust
+  
+  Sender -> SenderNode: trust did receiver as issuer of NutsAuthorizationCredentials
+  SenderNode <-> ReceiverNode: sync trust
+  
+end group
+
+note right
+  Resultaat Onboarding: 
+  1. Sender en Node en hun dienstverleners hebben een DID, 
+  2. Sender en node endpoints zijn inzichtelijk, 
+  3. Sender vertrouwt Receiver als 
+   issuer van VzvzUracredentials
+  4. Receiver vertrouwt Sender als
+   issuer van NutsAuthorizationCredentials
+end note
+@enduml
