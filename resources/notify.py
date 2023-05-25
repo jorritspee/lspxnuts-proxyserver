@@ -34,6 +34,9 @@ class Notify(Resource):
             response = Aorta_resource_client.call_lsp_create_task(task_aof, access_token)
             return response.json(), response.status_code
         except Exception as e:
+            print("-----BEGIN-------Notify expcetion: -------------")
             print(e)
+            print("-----END-------Notify expcetion: -------------")
+
             return { "error": "forwarding of notification request failed" }, 500
 

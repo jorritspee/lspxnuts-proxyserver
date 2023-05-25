@@ -17,5 +17,7 @@ class Aorta_resource_client:
         
         response = requests.post(endpoint, data=request_body, headers=headers, verify=False, cert=cert)
         #response.raise_for_status()
+        print("----BEGIN--------call_lsp_create_task, repsone.text: -------------")
         print(response.text)
+        print("----END--------call_lsp_create_task, repsone.text: -------------")
         return response
