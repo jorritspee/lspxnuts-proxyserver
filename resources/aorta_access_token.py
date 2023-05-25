@@ -22,7 +22,7 @@ class Aorta_access_token(Resource):
         # OUT: aorta access token
         # 1. check if NutsAuthzCredential is present
         # skip for now
-        authzcred_list = Nuts_vcr_client.getAuthzCredentials(actor_did, bsn)
+        # authzcred_list = Nuts_vcr_client.getAuthzCredentials(actor_did, bsn)
 
         # 2. then create aorta_access_token using aorta_authorization_client
         
