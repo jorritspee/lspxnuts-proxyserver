@@ -162,7 +162,12 @@ class Aorta_notification_transformer:
             "status": "requested",
             "intent": "proposal",
             "code": target_task_code,
-            "for": target_task_for,
+            "for": {
+                "identifier": {
+                    "system": "http://fhir.nl/fhir/NamingSystem/bsn",
+                    "value": "012345672"
+                }
+            },
             "requester": {
                 "reference": "#device1",
                 "type": "Device"

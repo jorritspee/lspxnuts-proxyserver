@@ -33,7 +33,7 @@ class Aorta_access_token(Resource):
             cert = ('LSP110.csc-lsp.nl.pem', 'LSP110.csc-lsp.nl.key.unencrypted')
 
             response = requests.post(endpoint, data=data, headers=headers, verify=False, cert=cert)
-            response.raise_for_status()
+            #response.raise_for_status()
             response_json = response.json()
             access_token = response_json["access_token"]
           
