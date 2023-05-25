@@ -19,7 +19,7 @@ api = Api(app)
 # adding the defined resources along with their corresponding urls
 api.add_resource(Hello, '/')
 api.add_resource(Access_token, '/access-token')
-api.add_resource(Notify, '/notify')
+api.add_resource(Notify, '/notify', '/notify/Task')
 api.add_resource(Fhir, '/fhir')
 api.add_resource(Admin_Issue_UraCredential, '/admin/issue/uracredential')
 
