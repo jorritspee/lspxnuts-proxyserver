@@ -32,7 +32,14 @@ class Notify(Resource):
 
         try:
             response = Aorta_resource_client.call_lsp_create_task(task_aof, access_token)
-            print("Content-Type: " + response.headers.get("content-type", "no content type available"))
+            print("-----BEGIN-------Notify body: -------------")
+            content_type = response.headers.get("content-type", "no content type available")
+            print("Content-Type: " + content_type)
+            if "text" in content_type:
+                print(response.text)
+            elif "json" in content_type:
+                print(response.json())
+            print("-----END-------Notify body: -------------")
             return response.json(), response.status_code
         except Exception as e:
             print("-----BEGIN-------Notify expcetion: -------------")
