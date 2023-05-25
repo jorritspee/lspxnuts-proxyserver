@@ -126,7 +126,7 @@ class Aorta_notification_transformer:
                         "valueString": f"{source_task_input_item_valueString}"
                     }
                     target_task_input.append(target_task_input_item)
-                elif source_task_input_item['type']['coding'][0]['code'] == 'query_resource':
+                elif source_task_input_item['type']['coding'][0]['code'] == 'query_resource' or source_task_input_item['type']['coding'][0]['code'] == '79191-3':
                     # ------------------
                     # - query_resource -
                     # ------------------
