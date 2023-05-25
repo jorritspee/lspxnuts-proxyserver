@@ -23,7 +23,7 @@ api.add_resource(Access_token, '/access-token')
 api.add_resource(Notify, '/notify', '/notify/Task')
 api.add_resource(Fhir, '/fhir')
 api.add_resource(Admin_Issue_UraCredential, '/admin/issue/uracredential')
-api.add_resource(Aorta_access_token, 'aorta/token')
+api.add_resource(Aorta_access_token, '/aorta/token')
 
 # driver function
 if __name__ == '__main__':

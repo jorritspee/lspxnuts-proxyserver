@@ -11,8 +11,7 @@ class Aorta_resource_client:
         'Authorization': 'Bearer ' + access_token,
         'AORTA-ID': 'initialRequestID=8ce9adde-7d32-49c5-b2b4-637aa4aca141; requestID=174ebcb2-ebf4-4eff-87bc-3e9584ae424c',
         'AORTA-Version': 'contentVersion=2.0; acceptVersion=2.x',
-        'Content-Type': 'application/fhir+json',
-        'Accept': 'application/fhir+json'
+        'Content-Type': 'application/fhir+json'
         }
         cert = ('LSP110.csc-lsp.nl.pem', 'LSP110.csc-lsp.nl.key.unencrypted')
         
