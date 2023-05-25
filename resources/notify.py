@@ -37,6 +37,10 @@ class Notify(Resource):
             print("Content-Type: " + content_type)
             if "text" in content_type:
                 print(response.text)
+                if "Ongeldig bericht of handtekening" in response.text:
+                    # hacked response
+                    return "", response.status_code
+                return response.text, response.status_code
             elif "json" in content_type:
                 print(response.json())
             print("-----END-------Notify body: -------------")
