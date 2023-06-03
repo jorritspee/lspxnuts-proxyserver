@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  nuts-node:
+    image: nutsfoundation/nuts-node:v5.2.2
+    restart: unless-stopped
+    environment:
+      NUTS_CONFIGFILE: /opt/nuts/nuts.yaml
+    volumes:
+      - "./nuts.yaml:/opt/nuts/nuts.yaml:ro"
+      - "./data:/opt/nuts/data"
+      - "./certs/truststore-development.pem:/opt/nuts/truststore.pem:ro"
+      - "./certs/n2n.lsp.dev.nuts-services.nl-development.pem:/opt/nuts/certificate.pem:ro"
+      - "./certs/n2n.lsp.dev.nuts-services.nl-development.key:/opt/nuts/certificate.key:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+  nuts-admin:
+    image: nutsfoundation/nuts-registry-admin-demo:5.2.1
+    restart: unless-stopped
+    volumes:
+      - "./admin.config.yaml:/app/server.config.yaml:ro"
+      - "./admin-data:/app/data:rw"
+  lspxnuts-proxyserver:
+    image: jorritspee/lspxnuts-proxyserver:local
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      "BASE_URL_NUTS_NODE": "http://nuts-node:1323"
+    volumes:
+      - "./lspxnuts-proxyserver/token:/token:ro"
+  proxy:
+    image: nginx
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "5555:5555"
+      - "8443:8443"
+      - "60738:60738"
+      - "60739:60739"
+    volumes:
+      - "/etc/letsencrypt/:/etc/letsencrypt/:ro"
+      - "./certs/:/etc/nuts-certs:ro"
+      - "./nginx.conf:/etc/nginx/conf.d/default.conf"
