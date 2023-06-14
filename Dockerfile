@@ -1,11 +1,14 @@
 # syntax=docker/dockerfile:1
 
 FROM python:3.11-slim-buster
+ARG POETRY_VERSION="1.3.1"
 
 WORKDIR /lspxnuts-proxy-docker
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip install "poetry==$POETRY_VERSION"
+COPY pyproject.toml pyproject.toml
+COPY poetry.lock poetry.lock
+RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
 
 COPY . .
 
