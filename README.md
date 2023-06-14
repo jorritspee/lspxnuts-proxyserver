@@ -35,3 +35,24 @@ OLD: $ docker build -t my-python-app .
 OLD: $ docker run -p 8000:8000 -it --rm --name my-running-app my-python-app
 ```
 3. send requests to the Proxy-server's API by using Postman and debug!
+
+
+## How-to run locally
+1. Install poetry
+```shell
+brew install poetry
+```
+2. Install the dependencies:
+```shell
+poetry install
+```
+3. Run the application
+```shell
+poetry run flask --app app run
+```
+
+## How to build and run the docker image
+```shell
+docker build -t lspxnuts-proxy-docker .
+docker run -d -p 8000:8000 lspxnuts-proxy-docker
+```
