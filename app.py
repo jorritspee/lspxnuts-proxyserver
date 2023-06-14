@@ -1,18 +1,17 @@
-#from http.server import HTTPServer, BaseHTTPRequestHandler
+# from http.server import HTTPServer, BaseHTTPRequestHandler
 from flask import Flask
 from flask_restful import Api
-from resources.hello import Hello
+
 from resources.access_token import Access_token
-from resources.notify import Notify
-from resources.fhir import Fhir
 from resources.admin import Admin_Issue_UraCredential
 from resources.aorta_access_token import Aorta_access_token
-
-import base64, json, logging, requests, urllib.parse
+from resources.fhir import Fhir
+from resources.hello import Hello
+from resources.notify import Notify
 
 # creating the flask app
 app = Flask(__name__)
-app.config.from_file("config.json", load=json.load)
+app.config.from_pyfile('config.py')
 
 # creating an API object
 api = Api(app)
