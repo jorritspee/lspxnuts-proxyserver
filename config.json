@@ -1,9 +1,0 @@
-{
-    "BASE_URL_NUTS_NODE": "http://nuts-node:1323",
-    "BASE_URL_LSP": "https://zim.prf001.aorta-zorg.nl",
-    "LSP_APPLICATION_ID": "80000002",
-    "FILENAME_TRANSACTION_TOKEN": "/token/transactietoken.txt",
-    "URA_LSP_DEELNEMER": "90019288",
-    "VENDOR_DID": "did:nuts:E5VztsdgrvgtwhZGwg7mdrgRJ7UK4qmLF4txUveADBFW",
-    "SENDER_AORTA_APPLICATION_ID": "110"
-}
